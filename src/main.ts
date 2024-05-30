@@ -1,14 +1,14 @@
-import { GLOBAL } from "./setup";
-import { positions, indices, faceColors, positionsCamera, indicesCamera, positionsCube } from "./data";
-import { m4 } from "./m4";
+import { GLOBAL } from "./setup.js";
+import { positions, indices, faceColors, positionsCamera, indicesCamera, positionsCube } from "./data.js";
+import { m4 } from "./m4.js";
 import { 
   fragment_shader_src, vertex_shader_src, 
   fragment_shader_solid_color_src, vertex_shader_solid_color_src
-} from "./shaders_src";
-import { degToRad, getNormals, radToDeg } from "./utils";
-import { addVectors, normalize } from "./vec3";
-import { createShader, createProgram } from "./shader";
-import { f } from "./listeners";
+} from "./shaders_src.js";
+import { degToRad, getNormals, radToDeg } from "./utils.js";
+import { addVectors, normalize } from "./vec3.js";
+import { createShader, createProgram } from "./shader.js";
+import { f } from "./listeners.js";
 f();
 
 console.log("launched");

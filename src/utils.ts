@@ -1,6 +1,6 @@
 /// <reference path="main.ts" />
 
-import { GLOBAL } from "./setup";
+import { GLOBAL } from "./setup.js";
 
 import { subtractVectors, cross, normalize } from "./vec3";
 
