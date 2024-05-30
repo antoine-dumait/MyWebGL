@@ -1,0 +1,151 @@
+import Matrix4x4 from "./matrix4";
+import { fragment_shader_src, vertex_shader_src } from "./shaders";
+import Vector3D from "./vec3";
+
+function createShader(gl: WebGLRenderingContext, type:  number, source : string): WebGLShader |undefined{
+    var shader = gl.createShader(type)!;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if (success) {
+      return shader;
+    }
+  
+    console.log(gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+}
+
+function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram |undefined{
+    var program = gl.createProgram()!;
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    if (success) {
+      return program;
+    }
+  
+    console.log(gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+}
+
+
+let CANVAS: HTMLCanvasElement; 
+let GL: WebGLRenderingContext; 
+function main() {
+    CANVAS = document.querySelector("#glcanvas")!;
+    CANVAS.width = 1080; CANVAS.height = 720;
+    GL = CANVAS.getContext("webgl")!;
+
+    // Only continue if WebGL is available and working
+    if (GL === null) {
+        alert(
+        "Unable to initialize WebGL. Your browser or machine may not support it."
+        );
+        return;
+    }    
+    window.requestAnimationFrame(update)
+}
+
+let yaw = 0
+let pitch = 0;
+function updateAngles(x: number, y: number){
+    let sensi = 500;
+    yaw = (yaw - x/sensi); //TODO: sus
+    pitch = Math.max(-(Math.PI/2)+0.3, Math.min(Math.PI/2-0.3, (pitch - y/sensi))); //pas bien       
+}
+
+document.body.addEventListener('mousemove', (e) => { //fonction anonyme to keep this as controller camera
+    updateAngles(e.movementX, e.movementY);
+    console.log(yaw, pitch);
+    
+});
+
+
+function update(){
+    const vertex_shader = createShader(GL, GL.VERTEX_SHADER, vertex_shader_src)!;
+    const fragment_shader = createShader(GL, GL.FRAGMENT_SHADER, fragment_shader_src)!;
+    const program = createProgram(GL, vertex_shader, fragment_shader)!;
+      
+    const positionAttributeLocation = GL.getAttribLocation(program, "a_position");
+    const colorUniformLocation = GL.getUniformLocation(program, "u_color");
+    const matrixUniformLocation = GL.getUniformLocation(program, "u_matrix");
+    const positionBuffer = GL.createBuffer();
+    GL.bindBuffer(GL.ARRAY_BUFFER, positionBuffer);
+    let points = []
+    points.push(new Vector3D(0,0,0));
+    points.push(new Vector3D(0,1,0));
+    points.push(new Vector3D(1,1,0));
+    points.push(new Vector3D(1,0,0)); 
+    points.push(new Vector3D(0,0,1));
+    points.push(new Vector3D(0,1,1));
+    points.push(new Vector3D(1,1,1));
+    points.push(new Vector3D(1,0,1)); 
+    
+    let matrixZOffset = Matrix4x4.translation(0,0,10);
+    points = points.map(v => Matrix4x4.multiplyVector(matrixZOffset, v));
+    const UP = new Vector3D(0,1,0);
+    const target = new Vector3D(0, 0, 1);
+    let pos = new Vector3D();
+    let matrixCameraRotation = Matrix4x4.getIdentity();
+    matrixCameraRotation = Matrix4x4.multiplyMatrix(matrixCameraRotation, Matrix4x4.rotationX(pitch ));
+    matrixCameraRotation = Matrix4x4.multiplyMatrix(matrixCameraRotation, Matrix4x4.rotationY(yaw));
+    let lookDirection = Matrix4x4.multiplyVector(matrixCameraRotation, target);
+    let forward = Vector3D.add(pos, lookDirection);
+    let matrixCamera = Matrix4x4.pointAt(pos, forward, UP);
+    let matrixView = Matrix4x4.quickInverse(matrixCamera);
+
+    const near = 0.1;
+    const far = 100.0;
+    const FOVdegrees = 60.0;
+    const aspectRatio = CANVAS.height / CANVAS.width;
+    let matrixProjection = Matrix4x4.makeProjection(FOVdegrees, aspectRatio, near, far);
+    let temp = Matrix4x4.multiplyMatrix(matrixProjection, matrixView);
+    let matrixProjectionNew = temp.m.flat(); 
+    // console.log(matrixProjectionNew);
+    
+
+
+    // let positions = [1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0];
+    let positions: number[] =  [];
+    points.map(v => positions.push(...[v.x,v.y,v.z]));
+    positions = positions.map(x => x/2);
+    // console.log(positions);
+    
+    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(positions), GL.STATIC_DRAW);
+
+    GL.viewport(0, 0, GL.canvas.width, GL.canvas.height);
+
+    
+    // Set clear color to black, fully opaque
+    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    // Clear the color buffer with specified clear color
+    GL.clear(GL.COLOR_BUFFER_BIT);
+    
+    GL.useProgram(program);
+    
+    GL.enableVertexAttribArray(positionAttributeLocation);
+
+    GL.uniformMatrix4fv(matrixUniformLocation, false, matrixProjectionNew);
+
+    GL.uniform4f(colorUniformLocation, 0,0,1,1);
+
+
+    let size = 3;
+    let type = GL.FLOAT;
+    let normalize = false;
+    let stride = 0;
+    let offset_ = 0;
+    GL.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset_);
+
+    let primitiveType = GL.TRIANGLE_STRIP;
+    let offset = 0;
+    let count = positions.length;
+
+    GL.drawArrays(primitiveType, offset, count/size);
+    
+    console.log("update !");
+    window.requestAnimationFrame(update)
+}
+
+main();
