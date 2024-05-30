@@ -1,7 +1,7 @@
 // import { cameraPosition, lookDirection, up } from "./main";
-import { GLOBAL } from "./setup";
-import { updateAngles } from "./utils";
-import { normalize, cross } from "./vec3";
+import { GLOBAL } from "./setup.js";
+import { updateAngles } from "./utils.js";
+import { normalize, cross } from "./vec3.js";
 export function f() {
     document.body.addEventListener('mousemove', (e) => {
         if (GLOBAL.locked) {

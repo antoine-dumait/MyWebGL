@@ -1,4 +1,4 @@
-import { cross, normalize, subtractVectors } from "./vec3";
+import { cross, normalize, subtractVectors } from "./vec3.js";
 export const m4 = {
     identity: function () {
         return [
