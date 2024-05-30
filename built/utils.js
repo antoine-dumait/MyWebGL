@@ -1,6 +1,6 @@
 /// <reference path="main.ts" />
 import { GLOBAL } from "./setup.js";
-import { subtractVectors, cross, normalize } from "./vec3";
+import { subtractVectors, cross, normalize } from "./vec3.js";
 export function updateAngles(x, y) {
     const sensi = 500;
     GLOBAL.yaw = (GLOBAL.yaw - x / sensi); //TODO: sus

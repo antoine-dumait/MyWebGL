@@ -2,7 +2,7 @@
 
 import { GLOBAL } from "./setup.js";
 
-import { subtractVectors, cross, normalize } from "./vec3";
+import { subtractVectors, cross, normalize } from "./vec3.js";
 
 export function updateAngles(x: number, y: number){ 
     const sensi = 500;
