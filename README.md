@@ -1,9 +1,4 @@
-# MyWebGL - !!WIP!!
-WebGL testing
+# MyWebGL
+Expérimentation WebGL et shaders, but de créer un simulateur de physique en utilisant des voxels.<br/>
 
-Learning the basics of WebGL and shaders (GLSL)
-
-The goal is to make a very optimized voxel sandbox
-
-Try it out in it's current state at :
-https://antoine-dumait.github.io/MyWebGL/
+Démo actuel: https://antoine-dumait.github.io/MyWebGL/
